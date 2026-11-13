@@ -1,0 +1,33 @@
+{
+  "extends": [
+    "github>rancher/renovate-config#release"
+  ],
+  "baseBranchPatterns": [
+    "main"
+  ],
+  "prHourlyLimit": 2,
+  "schedule": [
+    "* 4-7 * * 1"
+  ],
+  "updateNotScheduled": false,
+  "packageRules": [
+    {
+      "description": "Distro version bumps are done manually, together with their policy and e2e changes.",
+      "matchManagers": ["dockerfile"],
+      "matchUpdateTypes": ["major", "minor", "patch"],
+      "enabled": false
+    },
+    {
+      "description": "Group build image digest updates into a single PR.",
+      "matchManagers": ["dockerfile"],
+      "matchUpdateTypes": ["digest"],
+      "groupName": "build images",
+      "groupSlug": "build-images"
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "groupName": "GitHub Actions",
+      "groupSlug": "github-actions"
+    }
+  ]
+}

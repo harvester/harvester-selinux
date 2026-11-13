@@ -1,0 +1,20 @@
+policy_module(harvester, 1.0.0)
+
+gen_require(`
+    type container_file_t, container_var_lib_t;
+    class dir { search };
+    class file { open read };
+    class sock_file { write };
+')
+
+############################################################################
+# type: harvester_csi_container_t                                          #
+# project: harvester/harvester-csi-driver                                  #
+# target: csi-controllers sidecar containers for Harvester CSI driver      #
+############################################################################
+
+container_domain_template(harvester_csi_container, container)
+corenet_tcp_connect_http_port(harvester_csi_container_t)
+allow harvester_csi_container_t container_var_lib_t:file { open read };
+allow harvester_csi_container_t container_var_lib_t:sock_file write;
+allow harvester_csi_container_t container_file_t:dir search;

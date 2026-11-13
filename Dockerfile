@@ -1,0 +1,66 @@
+ARG POLICY
+
+# This Dockerfile is used to create the appropriate environment
+# to build the SELinux policies and package them as RPM for each
+# of the target platforms.
+
+FROM quay.io/rockylinux/rockylinux:9@sha256:8101994123cf3d0a8fee517bee7f39e555c7d92bd2d9eb3303cc988a0eeed00f AS centos9
+RUN yum install -y \
+        createrepo_c \
+        epel-release \
+        container-selinux \
+        selinux-policy-devel \
+        yum-utils \
+        rpm-build \
+        rpm-sign
+
+FROM quay.io/rockylinux/rockylinux:10@sha256:827d37bc128288ccf160ee318bb3cb92d591164cb217e92f8bc61e3982ae1834 AS centos10
+RUN yum install -y \
+        createrepo_c \
+        epel-release \
+        container-selinux \
+        selinux-policy-devel \
+        yum-utils \
+        rpm-build \
+        rpm-sign \
+        gnupg2
+
+FROM fedora:43@sha256:a651ddf48ea28a06ed4e1e6519f51c9f47e7a5a138722ade87369b8fbb7e5b42 AS fedora43
+RUN dnf clean all && dnf install -y \
+        createrepo_c \
+        container-selinux \
+        selinux-policy-devel \
+        rpm-build \
+        rpm-sign
+
+FROM opensuse/tumbleweed@sha256:33858e17c7424966766c570cc74dea17e9a1b85bfb5c86681d8748d2f7d435f5 AS microos
+RUN zypper install -y \
+        container-selinux \
+        selinux-policy-devel \
+        rpm-build \
+        rpm
+# libglib is required to install createrepo_c in Tumbleweed.
+RUN zypper install -y libglib-2_0-0 createrepo_c
+
+FROM opensuse/leap:16.0@sha256:1e710a28227dea189500dd49a9ccd2b9f218e059329354abdb1297ee94d2dcd4 AS sle
+RUN zypper install -y \
+        container-selinux \
+        selinux-policy-devel \
+        rpm-build \
+        rpm
+
+# libglib is required to install createrepo_c in Leap.
+RUN zypper install -y libglib-2_0-0 createrepo_c
+
+# Pick base image based on the target policy.
+FROM ${POLICY} AS final
+
+WORKDIR /src
+
+ARG POLICY
+COPY hack/sign /usr/local/bin/sign
+COPY policy/${POLICY}/harvester-selinux.spec \
+     policy/${POLICY}/harvester.fc \
+     policy/${POLICY}/harvester.te \
+     hack/build \
+     hack/metadata ./
