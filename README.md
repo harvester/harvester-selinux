@@ -48,8 +48,11 @@ semodule -l | grep harvester
 Installing the RPM is not enough on its own: charts must be configured to run in the provided SELinux types. For `harvester-csi-driver` (>= 0.1.33), set:
 
 ```bash
---set podSecurityContext.seLinuxOptions.type=harvester_csi_container_t
+--set podSecurityContext.seLinuxOptions.type=harvester_csi_container_t \
+--set podSecurityContext.seLinuxOptions.level=s0
 ```
+
+The `level` is required: when only `type` is set, containerd assigns each container in the pod a different MCS category pair, and the sidecars can no longer access the pod's shared volumes (e.g. the projected service account token).
 
 ## Support Matrix
 
