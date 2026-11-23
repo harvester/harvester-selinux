@@ -4,7 +4,7 @@ ARG POLICY
 # to build the SELinux policies and package them as RPM for each
 # of the target platforms.
 
-FROM quay.io/rockylinux/rockylinux:9@sha256:8101994123cf3d0a8fee517bee7f39e555c7d92bd2d9eb3303cc988a0eeed00f AS centos9
+FROM quay.io/rockylinux/rockylinux:9@sha256:bb5755f96bec05ff26165e779ec843d7167544be9e50770508f307019a6d05c4 AS centos9
 RUN yum install -y \
         createrepo_c \
         epel-release \
@@ -14,7 +14,7 @@ RUN yum install -y \
         rpm-build \
         rpm-sign
 
-FROM quay.io/rockylinux/rockylinux:10@sha256:827d37bc128288ccf160ee318bb3cb92d591164cb217e92f8bc61e3982ae1834 AS centos10
+FROM quay.io/rockylinux/rockylinux:10@sha256:d24beedc58f79b9e0e9289fedaa4fcbcbe692b1438883a86f177fd7c51053ca8 AS centos10
 RUN yum install -y \
         createrepo_c \
         epel-release \
@@ -25,7 +25,7 @@ RUN yum install -y \
         rpm-sign \
         gnupg2
 
-FROM fedora:43@sha256:a651ddf48ea28a06ed4e1e6519f51c9f47e7a5a138722ade87369b8fbb7e5b42 AS fedora43
+FROM fedora:43@sha256:f01112b9a1f1d0504ad962d9adfa401425033f8ab067e0a821904ebdde5b8ca5 AS fedora43
 RUN dnf clean all && dnf install -y \
         createrepo_c \
         container-selinux \
@@ -33,7 +33,7 @@ RUN dnf clean all && dnf install -y \
         rpm-build \
         rpm-sign
 
-FROM opensuse/tumbleweed@sha256:33858e17c7424966766c570cc74dea17e9a1b85bfb5c86681d8748d2f7d435f5 AS microos
+FROM opensuse/tumbleweed@sha256:9450579ce8e65d72792a6348e46ee88d6bdb449a2322e54b68132a1ceefce94b AS microos
 RUN zypper install -y \
         container-selinux \
         selinux-policy-devel \
@@ -42,7 +42,7 @@ RUN zypper install -y \
 # libglib is required to install createrepo_c in Tumbleweed.
 RUN zypper install -y libglib-2_0-0 createrepo_c
 
-FROM opensuse/leap:16.0@sha256:1e710a28227dea189500dd49a9ccd2b9f218e059329354abdb1297ee94d2dcd4 AS sle
+FROM opensuse/leap:16.0@sha256:a4115e2f5aea9712a7c73974fd94000a034fc3051ef29b5f7722fbf04070dd9d AS sle
 RUN zypper install -y \
         container-selinux \
         selinux-policy-devel \
