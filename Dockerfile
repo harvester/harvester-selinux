@@ -36,6 +36,7 @@ RUN dnf clean all && dnf install -y \
 FROM opensuse/tumbleweed@sha256:33858e17c7424966766c570cc74dea17e9a1b85bfb5c86681d8748d2f7d435f5 AS microos
 RUN zypper install -y \
         container-selinux \
+        findutils \
         selinux-policy-devel \
         rpm-build \
         rpm
@@ -45,6 +46,7 @@ RUN zypper install -y libglib-2_0-0 createrepo_c
 FROM opensuse/leap:16.0@sha256:1e710a28227dea189500dd49a9ccd2b9f218e059329354abdb1297ee94d2dcd4 AS sle
 RUN zypper install -y \
         container-selinux \
+        findutils \
         selinux-policy-devel \
         rpm-build \
         rpm
@@ -58,9 +60,10 @@ FROM ${POLICY} AS final
 WORKDIR /src
 
 ARG POLICY
+ENV POLICY=${POLICY}
 COPY hack/sign /usr/local/bin/sign
-COPY policy/${POLICY}/harvester-selinux.spec \
-     policy/${POLICY}/harvester.fc \
-     policy/${POLICY}/harvester.te \
+COPY policy/harvester-selinux.spec \
+     policy/harvester.fc \
+     policy/harvester.te \
      hack/build \
      hack/metadata ./
