@@ -1,4 +1,4 @@
-policy_module(harvester, 1.0.0)
+policy_module(harvester, 0.1.0)
 
 gen_require(`
     type container_file_t, container_var_lib_t;

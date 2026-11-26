@@ -1,16 +1,10 @@
 images:
-# Pinned to a numbered build: the unversioned "-Cloud.qcow2" URL is replaced on
-# every rebuild, which breaks the digest check. Bump build and digest together
-# (digests: <location>.sha256) when openSUSE removes this build.
-
-- location: https://download.opensuse.org/distribution/leap/16.0/appliances/Leap-16.0-Minimal-VM.x86_64-Cloud-Build18.92.qcow2
+- location: https://download.opensuse.org/distribution/leap/16.0/appliances/Leap-16.0-Minimal-VM.x86_64-Cloud.qcow2
   arch: x86_64
-  digest: "sha256:6714d7daceefffa9648d52b213bea017da0a23ef728aed32b4fb68f0f03b9ae2"
-
-- location: https://download.opensuse.org/distribution/leap/16.0/appliances/Leap-16.0-Minimal-VM.aarch64-Cloud-Build18.92.qcow2
+  digest: "sha256:6f41376091084719bdf0a7854e8498cddc0ec8fbbe45b0f4d6317da9ac368c70"
+- location: https://download.opensuse.org/distribution/leap/16.0/appliances/Leap-16.0-Minimal-VM.aarch64-Cloud.qcow2
   arch: aarch64
-  digest: "sha256:acddc5239334e6cc0d2c040861bb7c1bb19bdcc039793b8e6997abba0e06962f"
-
+  digest: "sha256:b2da386b7af09f5ece0681c6659cf1f7a6f034799f0c04029c7890c75816c18f"
 provision:
 - mode: system
   script: |
