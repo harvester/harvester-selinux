@@ -48,20 +48,25 @@ semodule -l | grep harvester
 Installing the RPM is not enough on its own: charts must be configured to run in the provided SELinux types. For `harvester-csi-driver` (>= 0.1.33), set:
 
 ```bash
---set podSecurityContext.seLinuxOptions.type=harvester_csi_container_t
+--set podSecurityContext.seLinuxOptions.type=harvester_csi_container_t \
+--set podSecurityContext.seLinuxOptions.level=s0
 ```
+
+The `level` is required: when only `type` is set, containerd assigns each container in the pod a different MCS category pair, and the sidecars can no longer access the pod's shared volumes (e.g. the projected service account token).
 
 ## Support Matrix
 
-| Operating System                | Version | Repo path   | RPM extension | Policy     |
-| :------------------------------ | :------ | :---------- | :------------ | :--------- |
-| openSUSE Leap / SLE / SLE Micro | 16 / 6  | `sle/16`    | `.sle`        | [sle]      |
-| openSUSE MicroOS / Tumbleweed   | Rolling | `microos`   | `.microos`    | [microos]  |
-| RHEL / CentOS / Rocky           | 9       | `centos/9`  | `.el9`        | [centos9]  |
-| RHEL / CentOS / Rocky           | 10      | `centos/10` | `.el10`       | [centos10] |
-| Fedora                          | 43      | `fedora/43` | `.fc43`       | [fedora43] |
+| Operating System                | Version | Build target | Repo path   | RPM extension |
+| :------------------------------ | :------ | :----------- | :---------- | :------------ |
+| openSUSE Leap / SLE / SLE Micro | 16 / 6  | `sle`        | `sle/16`    | `.sle`        |
+| openSUSE MicroOS / Tumbleweed   | Rolling | `microos`    | `microos`   | `.microos`    |
+| RHEL / CentOS / Rocky           | 9       | `centos9`    | `centos/9`  | `.el9`        |
+| RHEL / CentOS / Rocky           | 10      | `centos10`   | `centos/10` | `.el10`       |
+| Fedora                          | 43      | `fedora43`   | `fedora/43` | `.fc43`       |
 
-All policies are covered by end-to-end tests in CI.
+All distributions are built from a single [policy] (`policy/harvester.te`). Per-distribution packaging details (RPM extension, minimum `selinux-policy` and `container-selinux` versions, SUSE-specific dependencies) live in `policy/harvester-selinux.spec`.
+
+All distributions are covered by end-to-end tests in CI.
 
 ## Coverage
 
@@ -75,20 +80,20 @@ All policies are covered by end-to-end tests in CI.
 
 Requires Docker (or set `RUNNER=podman`). End-to-end tests require [Lima](https://lima-vm.io).
 
-| Command               | Description                                        |
-| :-------------------- | :------------------------------------------------- |
-| `make build`          | Build all policies                                 |
-| `make <policy>-build` | Build a single policy (e.g. `make sle-build`)      |
-| `make e2e-<distro>`   | Run end-to-end tests in a VM (e.g. `make e2e-sle`) |
+| Command               | Description                                                |
+| :-------------------- | :--------------------------------------------------------- |
+| `make build`          | Build the RPM for all distributions                        |
+| `make <distro>-build` | Build the RPM for one distribution (e.g. `make sle-build`) |
+| `make e2e-<distro>`   | Run end-to-end tests in a VM (e.g. `make e2e-sle`)         |
 
-Artefacts are written to `build/<policy>/`.
+Artefacts are written to `build/<distro>/`.
 
 The e2e tests run a single-node RKE2 cluster and install `harvester-csi-driver` with its controllers in `harvester_csi_container_t`. As there is no Harvester cluster, the CSI plugin is given a stand-in cloud-config pointing at the local RKE2 API server, which is enough for it to serve the CSI socket used by the sidecars.
 
 ### Adding a new distribution
 
-1. Add `policy/<name>/` with `harvester-selinux.spec`, `harvester.te` and `harvester.fc`.
-2. Add a matching `<name>` build stage to the `Dockerfile`.
+1. Add a `%if "%{distro}" == "<name>"` block to `policy/harvester-selinux.spec` with its RPM extension and minimum package versions.
+2. Add a matching `<name>` build stage to the `Dockerfile` and add `<name>` to `POLICIES` in the `Makefile`.
 3. Add `hack/e2e/<name>.yaml` (Lima template) and the distro to `.github/workflows/e2e.yml`.
 4. Map the policy to its repo path in `hack/upload`.
 5. Update the support matrix above.
@@ -111,9 +116,5 @@ Testing RPMs are published to `https://rpm-testing.rancher.io/harvester/testing/
 | `v0.2.testing.1`        | `harvester-selinux-0.2-1.el9.noarch.rpm`          | Testing    |
 | `v0.2.production.1`     | `harvester-selinux-0.2-1.el9.noarch.rpm`          | Production |
 
-[centos9]: https://github.com/harvester/harvester-selinux/tree/main/policy/centos9
-[centos10]: https://github.com/harvester/harvester-selinux/tree/main/policy/centos10
-[fedora43]: https://github.com/harvester/harvester-selinux/tree/main/policy/fedora43
-[microos]: https://github.com/harvester/harvester-selinux/tree/main/policy/microos
-[sle]: https://github.com/harvester/harvester-selinux/tree/main/policy/sle
+[policy]: https://github.com/harvester/harvester-selinux/tree/main/policy
 [csi-controllers]: https://github.com/harvester/charts/blob/master/charts/harvester-csi-driver/templates/deployment.yaml

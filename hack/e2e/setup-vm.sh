@@ -154,7 +154,14 @@ function installRKE2(){
 # of 127.0.0.1.
 function configureHarvesterCloudConfig(){
     local NODE_IP
-    NODE_IP=$(kubectl get node "$(hostname)" -o jsonpath='{.status.addresses[?(@.type=="InternalIP")].address}')
+    # Dual-stack nodes report several InternalIPs (e.g. on microos); use the first IPv4 one.
+    NODE_IP=$(kubectl get node "$(hostname)" \
+        -o jsonpath='{range .status.addresses[?(@.type=="InternalIP")]}{.address}{"\n"}{end}' \
+        | awk '!/:/ {print; exit}')
+    if [[ -z "${NODE_IP}" ]]; then
+        echo "ERROR: no IPv4 InternalIP found for node $(hostname)"
+        exit 1
+    fi
 
     echo "> Writing stand-in Harvester cloud-config pointing at https://${NODE_IP}:6443"
     mkdir -p "${HARVESTER_CLOUD_CONFIG_DIR}"
